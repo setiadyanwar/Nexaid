@@ -21,9 +21,11 @@ class ProductController extends Controller
         return Inertia::render('Products', [
             'products' => Product::all(),
             'categories' => Category::all(),
-            'productCount' => $productCount
+            'productCount' => $productCount,
         ]);
+        
     }
+
 
     /**
      * Store a newly created resource in storage.
