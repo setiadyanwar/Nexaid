@@ -49,6 +49,9 @@
     --color-chart-4: var(--chart-4);
     --color-chart-5: var(--chart-5);
 
+    --color-online: hsl(220, 65%, 60%);
+    --color-offline: hsl(150, 50%, 50%);
+
     --color-sidebar: var(--sidebar);
     --color-sidebar-foreground: var(--sidebar-foreground);
     --color-sidebar-primary: var(--sidebar-primary);
@@ -80,6 +83,11 @@
         @apply bg-background text-foreground;
       }
 }
+
+:root {
+    --color-online: hsl(150, 65%, 60%);
+    --color-offline: hsl(220, 65%, 60%);
+  }
 
 :root {
     --background:
@@ -147,8 +155,6 @@
         oklch(0.928 0.006 264.531);
     --sidebar-ring:
         oklch(0.707 0.022 261.325);
-    --color-desktop: hsl(var(--chart-1));
-    --color-mobile: hsl(var(--chart-2));
 }
 
 .dark {
@@ -215,8 +221,6 @@
         oklch(1 0 0 / 10%);
     --sidebar-ring:
         oklch(0.551 0.027 264.364);
-    --color-desktop: hsl(var(--chart-1));
-    --color-mobile: hsl(var(--chart-2));
 }
 
 @layer base {
