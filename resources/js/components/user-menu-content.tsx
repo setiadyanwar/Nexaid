@@ -3,10 +3,10 @@ import { UserInfo } from '@/components/user-info';
 import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
 import { type User } from '@/types';
 import { Link } from '@inertiajs/react';
-import { LogOut, Settings } from 'lucide-react';
+import { LogOut, Settings, LogIn, UserPlus } from 'lucide-react';
 
 interface UserMenuContentProps {
-    user: User;
+    user?: User | null;
 }
 
 export function UserMenuContent({ user }: UserMenuContentProps) {
@@ -20,21 +20,67 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
                 </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-                <DropdownMenuItem asChild>
-                    <Link className="block w-full" href={route('profile.edit')} as="button" prefetch onClick={cleanup}>
-                        <Settings className="mr-2" />
-                        Settings
-                    </Link>
-                </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-                <Link className="block w-full" method="post" href={route('logout')} as="button" onClick={cleanup}>
-                    <LogOut className="mr-2" />
-                    Log out
-                </Link>
-            </DropdownMenuItem>
+
+            {user ? (
+                <>
+                    <DropdownMenuGroup>
+                        <DropdownMenuItem asChild>
+                            <Link
+                                className="block w-full"
+                                href={route('profile.edit')}
+                                as="button"
+                                prefetch
+                                onClick={cleanup}
+                            >
+                                <Settings className="mr-2" />
+                                Settings
+                            </Link>
+                        </DropdownMenuItem>
+                    </DropdownMenuGroup>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                        <Link
+                            className="block w-full"
+                            method="post"
+                            href={route('logout')}
+                            as="button"
+                            onClick={cleanup}
+                        >
+                            <LogOut className="mr-2" />
+                            Log out
+                        </Link>
+                    </DropdownMenuItem>
+                </>
+            ) : (
+                <>
+                    <DropdownMenuGroup>
+                        <DropdownMenuItem asChild>
+                            <Link
+                                className="block w-full"
+                                href={route('login')}
+                                as="button"
+                                prefetch
+                                onClick={cleanup}
+                            >
+                                <LogIn className="mr-2" />
+                                Log in
+                            </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                            <Link
+                                className="block w-full"
+                                href={route('register')}
+                                as="button"
+                                prefetch
+                                onClick={cleanup}
+                            >
+                                <UserPlus className="mr-2" />
+                                Register
+                            </Link>
+                        </DropdownMenuItem>
+                    </DropdownMenuGroup>
+                </>
+            )}
         </>
     );
 }
