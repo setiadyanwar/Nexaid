@@ -2,115 +2,101 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Category;
 use App\Models\Product;
+use App\Models\Category;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class ProductController extends Controller
 {
-    
     /**
-     * Display a listing of the resource.
+     * Display a listing of the products, with optional search and pagination.
      */
-    public function index(): Response
+    public function index(Request $request): Response
     {
-        $productCount = \App\Models\Product::count();
+        $search = $request->input('search');
+
+        $products = Product::query()
+            ->when($search, function ($query, $search) {
+                $query->where('title', 'like', "%{$search}%")
+                      ->orWhere('content', 'like', "%{$search}%");
+            })
+            ->orderByDesc('id')
+            ->paginate(5)
+            ->withQueryString();
 
         return Inertia::render('Products', [
-            'products' => Product::all(),
+            'products' => $products,
             'categories' => Category::all(),
-            'productCount' => $productCount,
+            'filters' => [
+                'search' => $search,
+            ],
         ]);
-        
     }
 
-
     /**
-     * Store a newly created resource in storage.
+     * Store a newly created product.
      */
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'title' => 'required|string|max:255',
             'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'content' => 'required|string',
-            'category' => 'required|string',
+            'category_id' => 'required|exists:categories,id', 
             'price' => 'required|numeric',
         ]);
 
-        $data = $request->only(['title', 'content', 'category', 'price']);
-        // Handle the file upload
-        if ($request->hasFile('image')) {
-            $file = $request->file('image');
-            $filename = time() . '_' . $file->getClientOriginalName();
-            // Store the file in the "public/uploads" directory
-            $path = $file->storeAs('uploads', $filename, 'public');
-            $data['image'] = '/storage/' . $path;
-        }
+        $validated['image'] = $this->handleImageUpload($request);
 
-        Product::create($data);
+        Product::create($validated);
 
-        return redirect()->route('products.index')->with('success', 'Post created successfully.');
-            
+        return redirect()->route('products.index')->with('success', 'Product created successfully.');
     }
+
     /**
-     * Update the specified resource in storage.
+     * Update the specified product.
      */
     public function update(Request $request, $id)
     {
         $product = Product::findOrFail($id);
 
-        $request->validate([
+        $validated = $request->validate([
             'title' => 'required|string|max:255',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'content' => 'required|string',
-            'category' => 'required|string',
+            'category_id' => 'required|exists:categories,id',
             'price' => 'required|numeric',
         ]);
 
-        $data = $request->only(['title', 'content', 'category', 'price']);
-        // Handle the file upload
         if ($request->hasFile('image')) {
-            $file = $request->file('image');
-            $filename = time() . '_' . $file->getClientOriginalName();
-            // Store the file in the "public/uploads" directory
-            $path = $file->storeAs('uploads', $filename, 'public');
-            $data['image'] = '/storage/' . $path;
+            $validated['image'] = $this->handleImageUpload($request);
         }
+        $validated['category_id'] = $request->input('category_id');
+        $product->update($validated);
 
-        $product->update($data);
-
-        return redirect()->route('products.index')->with('success', 'Post updated successfully.');
-    }
-
-
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
+        return redirect()->route('products.index')->with('success', 'Product updated successfully.');
     }
 
     /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-
-    /**
-     * Remove the specified resource from storage.
+     * Delete the specified product.
      */
     public function destroy(Product $product)
     {
         $product->delete();
+
         return redirect()->route('products.index')->with('success', 'Product deleted successfully.');
     }
-    
+
+    /**
+     * Handle image upload logic.
+     */
+    private function handleImageUpload(Request $request): string
+    {
+        $file = $request->file('image');
+        $filename = time() . '_' . $file->getClientOriginalName();
+        $path = $file->storeAs('uploads', $filename, 'public');
+        return '/storage/' . $path;
+    }
 }
